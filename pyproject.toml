@@ -6,7 +6,6 @@ dependencies = [
     "mcrcon>=0.7.0",
     "pyyaml>=6.0.2",
     "openai>=1.70.0",
-    "discord-py>=2.5.2",
     "py-cord>=2.6.1",
 ]
 readme = "README.md"

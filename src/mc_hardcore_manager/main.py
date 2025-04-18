@@ -1,5 +1,6 @@
 import discord
-from discord.ext import commands
+# from discord.ext import commands # Remove this line
+from discord import commands # Add this line
 import logging
 import os
 import asyncio
@@ -22,7 +23,7 @@ from mc_hardcore_manager.death_handling.actions import DeathAction
 from mc_hardcore_manager.death_handling.handler import DeathHandler
 
 # カスタムBotクラスを定義して、追加の属性を型アノテーションで明示的に宣言
-class MCHardcoreBot(commands.Bot):
+class MCHardcoreBot(discord.Bot): # Changed back to discord.Bot
     """拡張Botクラス: ハードコア企画管理に必要な追加属性を定義"""
     
     def __init__(self, *args, **kwargs):
@@ -150,13 +151,13 @@ async def main():
     logger.info("Loading cogs...")
     for cog_path in cogs_to_load:
         try:
-            bot.load_extension(cog_path)
+            bot.load_extension(cog_path) # Removed await
             logger.info(f"Successfully loaded cog: {cog_path}")
-        except discord.errors.ExtensionNotFound:
+        except discord.ExtensionNotFound: # Changed from discord.errors.ExtensionNotFound
             logger.error(f"Cog not found: {cog_path}", exc_info=True)
-        except discord.errors.ExtensionAlreadyLoaded:
+        except discord.ExtensionAlreadyLoaded: # Changed from discord.errors.ExtensionAlreadyLoaded
             logger.warning(f"Cog already loaded: {cog_path}")
-        except discord.errors.NoEntryPointError:
+        except discord.NoEntryPointError: # Changed from discord.errors.NoEntryPointError
              logger.error(f"Cog {cog_path} has no setup() function.", exc_info=True)
         except Exception as e:
             logger.error(f"Failed to load cog {cog_path}: {e}", exc_info=True)
@@ -218,7 +219,7 @@ async def main():
     try:
         logger.info("Starting bot...")
         await bot.start(bot_token)
-    except discord.LoginFailure:
+    except discord.LoginFailure: # Keep as discord.LoginFailure (already top-level)
         logger.critical("Invalid Discord token provided. Please check config.yaml.")
     except Exception as e:
         logger.critical(f"An error occurred while running the bot: {e}", exc_info=True)
