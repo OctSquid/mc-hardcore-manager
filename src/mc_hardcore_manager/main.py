@@ -154,7 +154,8 @@ async def main():
     logger.info("Loading cogs...")
     for cog_path in cogs_to_load:
         try:
-            bot.load_extension(cog_path)
+            # Re-add await based on runtime warning, prioritizing it over Pylance signature
+            await bot.load_extension(cog_path) 
             logger.info(f"Successfully loaded cog: {cog_path}")
         except discord.errors.ExtensionNotFound:
             logger.error(f"Cog not found: {cog_path}", exc_info=True)
@@ -183,10 +184,8 @@ async def main():
         # Sync slash commands with Discord
         try:
             logger.info("Syncing application commands using bot.tree.sync()...")
-            # Use bot.tree.sync() which returns the list of synced commands or raises on error
-            # It doesn't typically return None on success, but we handle potential exceptions.
-            # Use the imported app_commands for the type hint
-            synced_commands: List[app_commands.AppCommand] = await bot.tree.sync() 
+            # Ensure we are calling bot.tree.sync()
+            synced_commands: List[app_commands.AppCommand] = await bot.tree.sync()
             logger.info(f"Synced {len(synced_commands)} application commands globally.")
         except discord.errors.Forbidden:
              logger.error("Failed to sync application commands: Bot lacks 'applications.commands' scope.")
