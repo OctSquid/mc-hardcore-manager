@@ -1,0 +1,36 @@
+[project]
+name = "mc-hardcore-manager"
+version = "0.1.0"
+description = "Add your description here"
+dependencies = [
+    "mcrcon>=0.7.0",
+    "pyyaml>=6.0.2",
+    "openai>=1.70.0",
+    "discord-py>=2.5.2",
+    "py-cord>=2.6.1",
+]
+readme = "README.md"
+requires-python = ">= 3.8"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.rye]
+managed = true
+dev-dependencies = [
+    "ruff>=0.5.0",
+    "pyright>=1.1.398",
+]
+
+[tool.rye.scripts]
+start = "python src/mc_hardcore_manager/main.py"
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/mc_hardcore_manager"]
+
+[tool.pyright]
+typeCheckingMode = "basic"

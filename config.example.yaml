@@ -1,0 +1,49 @@
+# Minecraft Server Settings
+server:
+  script: "/path/to/server_startup_script"  # TODO: Replace with actual path
+  ip: "localhost"
+  port: 25565
+  world_name: "world"
+  world_path: "/path/to/world_dir"      # TODO: Replace with actual path
+
+# RCON Settings
+rcon:
+  port: 25575
+  password: "xxxxxxxxx"                # TODO: Replace with actual password
+
+# Discord Bot Settings
+discord:
+  token: "xxxxxxxxxxxxxxxxxxx"               # TODO: Replace with actual token
+  notice_channel_id: 0                         # TODO: Replace with actual channel ID
+  admin_channel_id: 0                           # TODO: Replace with actual channel ID
+  owner_ids:
+    - 0                                      # TODO: Replace with actual owner user ID(s)
+
+# Data Storage Settings
+data:
+  path: "data.yaml"
+
+# OpenAI API Settings
+openAI:
+  url: "https://openrouter.ai/api/v1"              # Or your custom endpoint
+  api_key: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"                # TODO: Replace with actual API key
+  model: "deepseek/deepseek-chat-v3-0324:free"                             # Or your preferred model
+
+# Death Explosion Settings
+death_explosion:
+  enabled: true
+  delay: 5 # seconds
+
+# Death Title Settings
+death_title:
+  enabled: true
+  fade_in: 10   # ticks
+  stay: 70      # ticks
+  fade_out: 20  # ticks
+
+# Death Sound Settings
+death_sound:
+  enabled: true
+  sound_id: "minecraft:entity.wither.death"  # sad sound
+  volume: 1.0   # volume level
+  pitch: 0.7    # lower pitch for sad feeling

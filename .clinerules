@@ -1,0 +1,131 @@
+# 概要
+
+このプロジェクトはMinecraftのハードコア企画のマネージャとして、企画の進行を管理するためのツールです．
+スクリプトはDiscordのBotとして実装されています．
+
+# ハードコア企画ルール
+
+- ゲームの難易度はハードコア
+- 参加者が1人でも死亡した場合はワールドを作り直す
+
+# 機能
+
+- 設定は`config.yaml`に記載する
+- Minecraftサーバーを起動できる
+- プレイヤーごとの累計死亡回数，累計挑戦回数,挑戦時間，累計挑戦時間を記録する
+- プレイヤーの死亡があった場合，Discordのチャンネルに通知する
+- プレイヤーの死亡があった場合，ワールドを削除し，サーバーを再起動できる
+- プレイヤーの死亡があった場合，他のプレイヤーを爆死させる
+- Minecraft内のスコアボードに参加者の累計死亡回数を表示する
+- loggingを使用し，ログをlogsディレクトリに出力する
+
+## 使用ライブラリ
+
+- pycord (Discord Bot用)
+- mcrcon (Minecraft RCON接続用)
+- pyyaml (設定ファイル用)
+- openai-python (Open API用)
+
+各ライブラリのドキュメントは`docs/libs`ディレクトリに存在する場合があります
+パッケージ管理は`rye`を使用します
+
+## その他要件
+
+- Python 3.11
+- Minecraft Java Edition 1.21.5
+
+プログラムは拡張性を考慮して実装する
+
+## 機能実装
+
+### 設定
+
+- `config.yaml`に以下の情報を記載する
+  - `server.script`: Minecraftサーバーのスクリプトのパス
+  - `server.ip`: MinecraftサーバーのIPアドレス
+  - `server.port`: Minecraftサーバーのポート番号
+  - `server.world_name`: Minecraftサーバーのワールド名
+  - `server.world_path`: Minecraftサーバーのワールドのパス
+  - `rcon.port`: RCONのポート番号
+  - `rcon.password`: RCONのパスワード
+  - `discord.token`: Discord Botのトークン
+  - `discord.notice_channel_id`: 一般的な通知（死亡メッセージなど）のDiscordチャンネルのID
+  - `discord.admin_channel_id`: Admin用のDiscordチャンネルのID（ワールドの再生成確認やログなど）
+  - `discord.owner_ids`: BotのオーナーのDiscordユーザーIDのリスト
+  - `data.path`: プレイヤーの累計死亡回数や，挑戦回数を記録するファイルのパス(yaml形式)
+  - `openAI.url`: OpenAIのAPIのURL
+  - `openAI.api_key`: OpenAIのAPIのキー
+  - `openAI.model`: OpenAIのモデル名
+  - `death_explosion.enabled`: プレイヤーが死んだときに爆破させる機能を使用するかどうか
+  - `death_explosion.delay`: プレイヤーが死んだときに爆破させるまでの時間(秒)
+
+### Minecraftサーバーの起動
+
+config.yamlに記載された情報を元にMinecraftサーバーを起動します．
+pythonの`subprocess`モジュールを使用して，Minecraftサーバーを起動します．
+サーバーのログは常に監視可能です
+
+## プレイヤーの死亡回数・挑戦回数の記録
+
+外部ファイルにプレイヤーの死亡回数と挑戦回数を記録します．
+ファイルはyaml形式で保存します．
+ファイルのパスは`config.yaml`の`data.path`に記載します．
+プレイヤーが死亡するごとに該当プレイヤーの死亡回数を1増やします．
+プレイヤーが死亡した場合，そのプレイヤーの死亡回数を1増やし，挑戦回数を1増やします．
+Discord botのスラッシュコマンドを使用して，プレイヤーの死亡回数や挑戦回数を確認できます．
+プレイヤーの死亡回数や挑戦回数は，DiscordのEmbed形式で表示します．
+Discord botのスラッシュコマンドを使用して，挑戦回数と死亡回数をリセットできます．
+
+### プレイヤーの死亡通知
+
+Minecraftサーバーのログを監視し，プレイヤーが死亡した場合にDiscordのチャンネルに通知します．
+プレイヤーの死亡メッセージはDiscordのembed形式で通知します.
+プレイヤーの顔写真はDiscordのembedのAuthorとして表示します．
+
+プレイヤーの死亡メッセージは以下の形式で通知します．
+```
+<プレイヤー名>が死亡しました
+<プレイヤー名>の顔写真アイコン
+<死因の説明> discription
+<累計死亡回数> field
+<累計挑戦回数> field
+<今回の挑戦時間> field
+<累計挑戦時間> field
+```
+
+死因の説明は Minecraft Server のログを参照し，OpenAIのAPIを使用してLLMで生成します．
+死因の説明は日本語で生成します．
+
+累計死亡回数は該当プレイヤーの死亡回数を表示します．
+今回の挑戦時間はワールドが生成されてからチャレンジが失敗するまでの時間を表示します．
+累計挑戦時間は1回目の挑戦がスタートしてからの時間を表示します．
+
+
+### プレイヤーの死亡時にワールドを削除し，サーバーを再起動
+プレイヤーが死亡した場合，Minecraftサーバーのワールドを削除し，サーバーを再起動します．
+死亡した場合はDiscordのAdminチャンネルにサーバーを停止し，ワールドの再生成をして再起動するかを確認します(ボタンを使用)
+ワールドの再生成が許可された場合次の処理を行います．
+まず，Minecraftサーバーを停止します．
+次に，Minecraftサーバーのワールドを削除します．
+ワールドの削除は，`config.yaml`の`server.world_path`に記載されたパスを使用します．
+ワールドの削除は，`shutil`モジュールを使用して，ワールドのパスを削除します．
+次に，Minecraftサーバーを再起動します．
+
+サーバーの再起動は，`subprocess`モジュールを使用して，Minecraftサーバーを起動します．
+サーバーの再起動は，`config.yaml`の`server.script`に記載されたスクリプトを使用します．
+
+ワールドの削除やサーバーの起動・停止は，Admin用のDiscordのEmbed形式で通知します．
+
+### プレイヤーの死亡時に他のプレイヤーを爆死させる
+
+configの`death_explosion.enabled`がTrueの場合に実行します．
+プレイヤーが死亡した場合，他のプレイヤーを爆死させます．
+プレイヤーの座標に起爆まで0秒の起爆されたTNTを召喚します．
+
+### Minecraft内のスコアボードに参加者の累計死亡回数を表示する
+
+Minecraftのスコアボードに参加者の累計死亡回数を表示します．
+スコアボードの表示はsidebarコマンドを使用して，表示します．
+
+### loggingを使用し，ログをlogsディレクトリに出力する
+
