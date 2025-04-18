@@ -61,6 +61,7 @@ async def main():
     # intents.members = True      # If needing member information beyond cache
 
     bot = MCHardcoreBot(
+        command_prefix='!', # Add a dummy command prefix
         intents=intents,
         owner_ids=set(config.discord.owner_ids) # Use validated config
     )
