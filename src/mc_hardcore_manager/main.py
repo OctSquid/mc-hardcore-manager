@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+from discord import app_commands # Import app_commands
 import logging
 import os
 import asyncio
@@ -27,6 +28,8 @@ class MCHardcoreBot(commands.Bot):
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # Explicitly type hint inherited attributes for clarity/Pylance
+        self.tree: app_commands.CommandTree = self.tree 
         self.config: Optional[Config] = None
         self.data_manager: Optional[DataManager] = None
         self.rcon_client: Optional[RconClient] = None
@@ -179,13 +182,14 @@ async def main():
 
         # Sync slash commands with Discord
         try:
-            logger.info("Syncing application commands...")
-            # sync_commands can return None
-            synced_commands: Optional[List[Any]] = await bot.sync_commands() 
-            if synced_commands is not None:
-                logger.info(f"Synced {len(synced_commands)} application commands globally.")
-            else:
-                logger.warning("sync_commands returned None. No commands might have been synced or an issue occurred.")
+            logger.info("Syncing application commands using bot.tree.sync()...")
+            # Use bot.tree.sync() which returns the list of synced commands or raises on error
+            # It doesn't typically return None on success, but we handle potential exceptions.
+            # Use the imported app_commands for the type hint
+            synced_commands: List[app_commands.AppCommand] = await bot.tree.sync() 
+            logger.info(f"Synced {len(synced_commands)} application commands globally.")
+        except discord.errors.Forbidden:
+             logger.error("Failed to sync application commands: Bot lacks 'applications.commands' scope.")
         except Exception as e:
             logger.error(f"Failed to sync application commands: {e}", exc_info=True)
         
