@@ -176,6 +176,18 @@ async def main():
             logger.info('Logged in (user information not available)')
         logger.info('------')
         logger.info('Bot is ready and online.')
+
+        # Sync slash commands with Discord
+        try:
+            logger.info("Syncing application commands...")
+            # sync_commands can return None
+            synced_commands: Optional[List[Any]] = await bot.sync_commands() 
+            if synced_commands is not None:
+                logger.info(f"Synced {len(synced_commands)} application commands globally.")
+            else:
+                logger.warning("sync_commands returned None. No commands might have been synced or an issue occurred.")
+        except Exception as e:
+            logger.error(f"Failed to sync application commands: {e}", exc_info=True)
         
         try:
             # Initialize DeathHandler channels
